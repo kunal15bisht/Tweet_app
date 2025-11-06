@@ -1,20 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: black;
-            margin: 0;
-            padding: 20px;
-            color: white;
-        }
-    </style>
-</head>
-<body>
-    test tamplate
-</body>
-</html>
+{% extends "layout.html" %}
+
+{% block title %} Tweet {% endblock %}
+
+{% block content %}
+    <h1 class='text-center mt-4'>Welcome to the Tweet App</h1>
+    <p class='text-center mt-4'>This is the index page.</p>
+{% endblock %}
