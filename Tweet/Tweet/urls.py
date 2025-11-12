@@ -21,5 +21,10 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('tweet/',include('tweet_app.urls')),
-]+ static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
+    # Tweet app routes
+    path('tweet/', include('tweet_app.urls')),
+
+]
+
+# Media support
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
