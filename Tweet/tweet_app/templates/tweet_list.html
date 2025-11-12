@@ -1,22 +1,62 @@
 {% extends "layout.html" %}
 
-{% block title %} Tweet {% endblock %}
+{% block title %}Tweet Feed{% endblock %}
 
 {% block content %}
-    <h1 class='text-center mt-4'>Welcome to the Tweet App</h1>
-    <p class='text-center mt-4'>This is the index page.</p>
-    <a class = "btn btn-primary m-3" href="{% url "tweet_create" %}">Create Tweet</a>
-    <dic class="container row gap-3">
-        {% for tweet in tweets  %}
-            <div class="card" style="width: 18rem;">
-                <img src="{{tweet.photo.url}}" class="card-img-top" alt="...">
-                <div class="card-body">
-                    <h5 class="card-title">{{tweet.user.username}}</h5>
-                    <p class="card-text">{{tweet.text}}</p>
-                    <a href="{% url "tweet_edit" tweet.id %}" class="btn btn-primary">Edit</a>
-                    <a href="{% url "tweet_delete" tweet.id %}" class="btn btn-danger">Delete</a>
+
+<div class="container py-5">
+    <h1 class="text-center mb-4 fw-bold text-primary">Welcome to TweetApp 🐦</h1>
+
+    {% if message %}
+        <div class="alert alert-info text-center w-75 mx-auto mb-4" style="border-radius: 12px;">
+            {{ message }}
+        </div>
+    {% endif %}
+
+    <!-- Create Tweet button only -->
+    <div class="d-flex justify-content-center mb-4">
+        <a class="btn btn-lg btn-primary shadow-sm" style="border-radius: 12px;" href="{% url 'tweet_create' %}">
+            + Create Tweet
+        </a>
+    </div>
+
+    {% if tweets %}
+        <div class="row justify-content-center g-4">
+            {% for tweet in tweets %}
+                <div class="col-md-4 col-sm-6">
+                    <div class="card shadow-sm border border-secondary-subtle h-100"
+                         style="border-radius: 16px; overflow: hidden;">
+                        {% if tweet.photo %}
+                            <img src="{{ tweet.photo.url }}" class="card-img-top" alt="Tweet Image"
+                                 style="height: 200px; object-fit: cover;">
+                        {% endif %}
+
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="fw-semibold text-primary me-2">@{{ tweet.user.username }}</div>
+                                {% if tweet.created_at %}
+                                    <small class="text-muted">{{ tweet.created_at|date:"M d, Y H:i" }}</small>
+                                {% endif %}
+                            </div>
+                            <p class="card-text fs-6">{{ tweet.text }}</p>
+                        </div>
+
+                        {% if tweet.user == user %}
+                            <div class="card-footer bg-transparent border-0 d-flex justify-content-between px-3 pb-3">
+                                <a href="{% url 'tweet_edit' tweet.id %}" class="text-primary fw-semibold text-decoration-none">
+                                    ✏️ Edit
+                                </a>
+                                <a href="{% url 'tweet_delete' tweet.id %}" class="text-danger fw-semibold text-decoration-none">
+                                    🗑️ Delete
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
-        {% endfor %}
-    </dic>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center text-muted mt-5 fs-5">No tweets yet. Be the first to post!</p>
+    {% endif %}
+</div>
 {% endblock %}
