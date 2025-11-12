@@ -22,7 +22,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Tweet app routes
-    path('tweet/', include('tweet_app.urls')),
+    path('', include('tweet_app.urls')),
 
 ]
 
