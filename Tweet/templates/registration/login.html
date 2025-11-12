@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 450px;">
+  <div class="card shadow p-4">
+    <h3 class="text-center mb-3">Login</h3>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control form-control-lg" name="email" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control form-control-lg" name="password" required>
+      </div>
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary w-100 py-2">Login</button>
+    </form>
+
+    <p class="text-center mt-3 mb-0">
+      Don't have an account?
+      <a href="{% url 'register' %}">Register</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
