@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="container mt-5 p-4">
+    <div class="card shadow p-4" style="max-width: 500px; margin: auto;">
+        <h3 class="text-center mb-4">Register</h3>
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+
+        {% if not otp_phase %}
+            <!-- Phase 1: Registration Form -->
+            <form method="POST">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="text-danger small">
+                            {{ field.errors|striptags }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+                <button type="submit" name="send_otp" class="btn btn-primary w-100 py-2">
+                    Send Verification Code
+                </button>
+            </form>
+
+        {% else %}
+            <!-- Phase 2: OTP Verification -->
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="otp" class="form-label">Enter OTP sent to <strong>{{ email }}</strong></label>
+                    <input type="text" name="otp" maxlength="6" class="form-control text-center" required>
+                </div>
+                <button type="submit" name="verify_otp" class="btn btn-success w-100 py-2 mb-2">
+                    Verify & Register
+                    </button>
+                </form>
+
+                <!-- Resend OTP -->
+                <form method="POST">
+                    {% csrf_token %}
+                    <button type="submit" name="resend_otp" class="btn btn-outline-secondary w-100 py-2">
+                        Resend OTP
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+       
+        <p class='text-center mt-2'>Already have an account. <a href="{% url 'login' %}">login here</a></p>
+    </div>
+</div>
+    
+{% endblock %}
