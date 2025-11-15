@@ -26,9 +26,10 @@ SECRET_KEY = 'django-insecure-aa$0fc@=if_3zx+-+l%jcr-+k020%r7#!7#r=c1q*x15sg+i9h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ALLOWED_HOSTS = [
+ALLOWED_HOSTS = [
     'tweetapp-6jrl.onrender.com',
-    '.onrender.com' 
+    '.onrender.com',
+    "127.0.0.1",
 ]
 
 
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 'storages'
     'tweet_app',
 ]
 
