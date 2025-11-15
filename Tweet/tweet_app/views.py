@@ -17,6 +17,12 @@ def tweet_list(request):
     tweets = Tweet.objects.all().order_by("-created_at")
     return render(request, 'tweet_list.html',{"tweets":tweets})
 
+
+#singal tweets
+def tweet_detail(request,tweet_id):
+    tweet = get_object_or_404(Tweet, pk =tweet_id)
+    return render(request ,'tweet_detail.html',{"tweet":tweet})
+
 #Create a tweet
 @login_required
 def tweet_create(request):
