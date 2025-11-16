@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-import os
+# os is no longer needed for this
 from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
 
@@ -16,21 +16,37 @@ class Tweet(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.text[:50]}"
 
-    # ✅ When tweet deleted → delete the image file
-    def delete(self, *args, **kwargs):
-        if self.photo and os.path.isfile(self.photo.path):
-            os.remove(self.photo.path)
-        super().delete(*args, **kwargs)
+    # We can remove the custom .delete() and .save() methods
+    # The signals below will handle everything
 
-    # ✅ When tweet updated → delete old image if replaced
-    def save(self, *args, **kwargs):
-        try:
-            old = Tweet.objects.get(pk=self.pk)
-        except Tweet.DoesNotExist:
-            old = None
 
-        if old and old.photo and old.photo != self.photo:
-            if os.path.isfile(old.photo.path):
-                os.remove(old.photo.path)
+# ✅ When tweet deleted → delete the image file from S3
+@receiver(post_delete, sender=Tweet)
+def delete_photo_on_tweet_delete(sender, instance, **kwargs):
+    """
+    Deletes photo from S3 when Tweet is deleted.
+    'instance' is the Tweet object that was deleted.
+    """
+    if instance.photo:
+        instance.photo.delete(save=False)
 
-        super().save(*args, **kwargs)
+# ✅ When tweet updated → delete old image if replaced
+@receiver(pre_save, sender=Tweet)
+def delete_old_photo_on_update(sender, instance, **kwargs):
+    """
+    Deletes old photo from S3 when a Tweet is updated with a new photo.
+    """
+    # if this is a new object, it won't have a pk, so just return
+    if not instance.pk:
+        return
+
+    try:
+        # Get the 'old' version of the object from the database
+        old_tweet = Tweet.objects.get(pk=instance.pk)
+    except Tweet.DoesNotExist:
+        return # Object is new, so no old photo to delete
+
+    # Check if the photo field has changed, and if the old photo exists
+    if old_tweet.photo and old_tweet.photo != instance.photo:
+        # Delete the old photo from S3
+        old_tweet.photo.delete(save=False)
