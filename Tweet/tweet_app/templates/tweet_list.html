@@ -44,23 +44,12 @@
                                 <small class="text-muted">{{ tweet.created_at|date:"M d, Y H:i" }}</small>
                             {% endif %}
                         </div>
-                        <p class="card-text fs-6">{{ tweet.text }}</p>
+                        <p class="card-text fs-6"
+                        style="display: -webkit-box;-webkit-line-clamp: 2;-webkit-box-orient: vertical;overflow: hidden;">{{ tweet.text }}</p>
                     </div>
                 </div>
 
             </a>
-
-            {% comment %} {% if tweet.user == user %}
-                <div class="d-flex justify-content-between px-2 mt-2">
-                    <a href="{% url 'tweet_edit' tweet.id %}" class="text-primary fw-semibold text-decoration-none">
-                        ✏️ Edit
-                    </a>
-                    <a href="{% url 'tweet_delete' tweet.id %}" class="text-danger fw-semibold text-decoration-none">
-                        🗑️ Delete
-                    </a>
-                </div>
-            {% endif %} {% endcomment %}
-
         </div>
     {% endfor %}
 </div>

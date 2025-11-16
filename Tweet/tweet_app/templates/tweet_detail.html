@@ -7,11 +7,9 @@
     <dev class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-sm border border-secondary-subtle"> 
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div class="fw-semibold text-primary me-3  py-2 ps-3 fs-3" >@ {{ tweet.user.username }}</div>
-                    <a href="{% url 'tweet_list' %}" class="btn btn-outline-secondary px-3 py-2" style="border-radius: 10px;">
-                            ← Go Back
-                    </a>
+                <div class="d-flex justify-content-between align-items-center mb-2 px-3 pt-2">
+                    <div class="fw-semibold text-primary me-3 fs-4" >@ {{ tweet.user.username }}</div>
+                    <a href="{% url 'tweet_list' %}" class="btn btn-outline-secondary" style="border-radius: 10px;">← Go Back</a>
                 </div>
                  {% if tweet.photo %}
                             <img src="{{ tweet.photo.url }}" class="card-img-top mh-50 radius-3">
@@ -22,7 +20,22 @@
                             <small class="text-muted">{{ tweet.created_at|date:"M d, Y H:i" }}</small>
                         {% endif %}
                     </div>
+
                 </dev>
-                <p class="card-text fs-6">{{ tweet.text }}</p>
-</div>
+
+                    <p class="card-text fs-6">{{ tweet.text }}</p>
+            </div>
+        </div>
+        {% if tweet.user == user %}
+                <div class="d-flex justify-content-between px-2 mt-2">
+                    <a href="{% url 'tweet_edit' tweet.id %}" class="text-primary fw-semibold text-decoration-none">
+                        ✏️ Edit
+                    </a>
+                    <a href="{% url 'tweet_delete' tweet.id %}" class="text-danger fw-semibold text-decoration-none">
+                        🗑️ Delete
+                    </a>
+                </div>
+            {% endif %}
+    </div>
+</dev>  
 {% endblock %}

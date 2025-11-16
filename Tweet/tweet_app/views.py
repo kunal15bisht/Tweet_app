@@ -54,12 +54,15 @@ def tweet_edit(request,tweet_id):
 
 #delete a tweet
 @login_required
-def tweet_delete(request,tweet_id):
+def tweet_delete(request, tweet_id):
     tweet = get_object_or_404(Tweet, pk=tweet_id, user=request.user)
+
     if request.method == "POST":
         tweet.delete()
         return redirect("tweet_list")
-    return render(request, "tweet_confirm_delete.html",{'tweet':tweet})
+
+    return render(request, "tweet_confirm_delete.html", {'tweet': tweet})
+
 
 @login_required
 def tweet_search(request):
