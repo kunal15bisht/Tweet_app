@@ -138,39 +138,42 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'kunal15bisht@gmail.com'
-EMAIL_HOST_PASSWORD = 'rrba etdn grba ulrh'  # Use Gmail App Password!
 
-CSRF_TRUSTED_ORIGINS = ['https://TweetApp.onrender.com']
+if os.environ.get('DJANGO_ENV') == 'production':
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')
+else:
+    EMAIL_HOST_PASSWORD = 'rrba etdn grba ulrh'  # Use Gmail App Password!
+
+CSRF_TRUSTED_ORIGINS = ['https://tweetapp-6jrl.onrender.com']
 
 
 # AWS S3 STORAGE CONFIGURATION
 # Check if we are in production (on Render)
-if 'DATABASE_URL' in os.environ: # 'DATABASE_URL' is a default Render var
+# ... other settings ...
 
+# Check if we are in production (on Render)
+if os.environ.get('DJANGO_ENV') == 'production':
+    
+    # PRODUCTION SETTINGS (S3)
     AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
     AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
-    AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME') # e.g., 'us-east-1'
+    AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME') 
 
     AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
     AWS_S3_FILE_OVERWRITE = False
 
-    # This tells Django to use S3 for all file storage
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
-    # This is for your static files (CSS, JS) - good to host them here too
     STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-    AWS_LOCATION_MEDIA = 'media' # All media files will go to /media/ in the bucket
-    AWS_LOCATION_STATIC = 'static' # All static files will go to /static/
+    AWS_LOCATION_MEDIA = 'media'
+    AWS_LOCATION_STATIC = 'static'
 
-    # URLs for your templates
     STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION_STATIC}/'
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION_MEDIA}/'
 
 else:
-    # These are your settings for LOCAL development (not on Render)
-    
+    # LOCAL DEVELOPMENT SETTINGS
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     MEDIA_URL = '/media/'
 
