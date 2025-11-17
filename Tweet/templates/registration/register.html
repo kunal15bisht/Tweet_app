@@ -10,7 +10,6 @@
         {% endfor %}
 
         {% if not otp_phase %}
-            <!-- Phase 1: Registration Form -->
             <form method="POST">
                 {% csrf_token %}
                 {% for field in form %}
@@ -30,19 +29,18 @@
             </form>
 
         {% else %}
-            <!-- Phase 2: OTP Verification -->
             <form method="POST">
                 {% csrf_token %}
                 <div class="mb-3">
                     <label for="otp" class="form-label">Enter OTP sent to <strong>{{ email }}</strong></label>
                     <input type="text" name="otp" maxlength="6" class="form-control text-center" required>
+                    <div class="form-text text-center mt-2">This code will expire in 2 minutes.</div>
                 </div>
                 <button type="submit" name="verify_otp" class="btn btn-success w-100 py-2 mb-2">
                     Verify & Register
                     </button>
                 </form>
 
-                <!-- Resend OTP -->
                 <form method="POST">
                     {% csrf_token %}
                     <button type="submit" name="resend_otp" class="btn btn-outline-secondary w-100 py-2">
