@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render
 from .models import Tweet
-from .forms import TweetForm, UserRegistrationsForm, UserLoginForm
+from .forms import TweetForm, UserRegistrationsForm, UserLoginForm, UserUpdateForm, ProfileUpdateForm
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -263,4 +263,41 @@ def login_view(request):
         form = UserLoginForm()
         
     return render(request, 'registration/login.html', {'form': form})
+
+
+
+# View any user's profile
+def profile(request, username):
+    user_obj = get_object_or_404(User, username=username)
+    # Get all tweets by this specific user
+    user_tweets = Tweet.objects.filter(user=user_obj).order_by("-created_at")
+    
+    return render(request, 'profile.html', {
+        'profile_user': user_obj,
+        'user_tweets': user_tweets
+    })
+
+# Edit your own profile
+@login_required
+def profile_edit(request):
+    if request.method == 'POST':
+        u_form = UserUpdateForm(request.POST, instance=request.user)
+        p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+
+        if u_form.is_valid() and p_form.is_valid():
+            u_form.save()
+            p_form.save()
+            messages.success(request, f'Your account has been updated!')
+            return redirect('profile', username=request.user.username)
+
+    else:
+        u_form = UserUpdateForm(instance=request.user)
+        p_form = ProfileUpdateForm(instance=request.user.profile)
+
+    context = {
+        'u_form': u_form,
+        'p_form': p_form
+    }
+
+    return render(request, 'profile_edit.html', context)
 

@@ -9,7 +9,7 @@
             <div class="card shadow-sm border border-secondary-subtle"> 
                 <div class="d-flex justify-content-between align-items-center mb-2 px-3 pt-2">
                     <div class="fw-semibold text-primary me-3 fs-4" >@ {{ tweet.user.username }}</div>
-                    <a href="{% url 'tweet_list' %}" class="btn btn-outline-secondary" style="border-radius: 10px;">← Go Back</a>
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary" style="border-radius: 10px;">← Go Back</a>
                 </div>
                  {% if tweet.photo %}
                             <img src="{{ tweet.photo.url }}" class="card-img-top mh-50 radius-3">
