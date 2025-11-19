@@ -8,88 +8,93 @@
         <meta http-equiv="Pragma" content="no-cache">
         <meta http-equiv="Expires" content="0">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-        <script src="https://kit.fontawesome.com/5d82faebd2.js" crossorigin="anonymous"></script>
-    <title>
-        {% block title %}
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+        <title>
+            {% block title %}
             Tweet App
-        {% endblock %}
-    </title>
+            {% endblock %}
+        </title>
+        
+    </head>
+    <body>
 
-</head>
-<body>
-        <nav class="navbar navbar-expand-lg bg-body-tertiary">
+{% if user.is_authenticated %}
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
-
+        
         <!-- Brand -->
-        {% if user.is_authenticated %}
-        <a class="navbar-brand fw-bold" href="{% url 'tweet_list' %}">
-            TweetApp
+        <a class="navbar-brand fw-bold fs-3" href="{% url 'tweet_list' %}">
+            🐦TweetApp
         </a>
-        {% endif %}
-
+        
         <!-- Mobile Toggle -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
-                data-bs-target="#navbarNav" aria-controls="navbarNav" 
-                aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <!-- Navbar Items -->
-        <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
-
-            <!-- CENTER SEARCH BAR -->
-            <div class="mx-auto" style="width: 40%;">
-                <form class="d-flex" role="search" method="GET" action="{% url 'tweet_search' %}">
-                    <div class="input-group">
-
-                        <!-- Icon -->
-                        <span class="input-group-text bg-light border-0 rounded-start-pill">
-                            <i class="fa-solid fa-magnifying-glass text-secondary"></i>
-                        </span>
-
-                        <!-- Input -->
-                        <input type="search" name="search"
-                               class="form-control bg-light border-0 rounded-0"
-                               placeholder="Search tweets...">
-
-                        <!-- Dark Search Button -->
-                        <button class="btn btn-dark rounded-end-pill" type="submit">
-                            Search
-                        </button>
-
-                    </div>
-                </form>
-            </div>
-
-            <!-- Right Side (Logout + Icon) -->
-            {% if user.is_authenticated %}
-            <div class="d-flex align-items-center">
-
-                <!-- Logout Button -->
-                <form method="post" action="{% url 'logout' %}">
-                    {% csrf_token %}
-                    <button class="btn btn-outline-light me-3" type="submit">
-                        Logout
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+        data-bs-target="#navbarNav" aria-controls="navbarNav"
+        aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <!-- NAVBAR CONTENT -->
+    <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
+        
+        <!-- CENTER SEARCH BAR -->
+        <div class="mx-auto" style="width: 40%;">
+            <form class="d-flex" role="search" method="GET" action="{% url 'tweet_search' %}">
+                <div class="input-group">
+                    
+                    <!-- Input -->
+                    {% comment %} <input type="search" name="search"class="form-control form-control-lg outline-light rounded-start"placeholder="Search tweets..."> {% endcomment %}
+                    <input type="search" name="search"class="form-control border-0 shadow-none rounded-start"placeholder="Search tweets...">
+                    <!-- Button -->
+                    <button class="btn btn-outline-light me-3  rounded-end" type="submit">
+                        Search
                     </button>
-                </form>
-
-                <!-- Profile Icon -->
-                <a href="#" class="text-white fs-4">
-                    <i class="fa-solid fa-user-circle"></i>
+                    
+                </div>
+            </form>
+        </div>
+        
+        <!-- RIGHT SIDE -->
+        <div class="d-flex align-items-center gap-1 m-2">
+            <!-- Create Tweet button only -->
+            <a class="btn btn-outline-light me-3" style="border-radius: 12px;" href="{% url 'tweet_create' %}">
+                + Create Tweet
+            </a>
+            
+            <!-- Logout -->
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="btn btn-outline-light me-3" type="submit">
+                    Logout
+                </button>
+            </form>
+            
+            <!-- Profile -->
+            <a href="{% url 'profile' user.username %}" class="text-white">
+                <i class="fa-sharp fa-regular fa-circle-user fa-2xl" style="color:#adadad"></i>
                 </a>
 
             </div>
-            {% endif %}
-
+            
         </div>
     </div>
 </nav>
 
-
-    <div class="container">
-        {% block content %}
-        {% endblock %}
+{% else %}
+<div class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="mx-auto fw-bold fs-1">
+        TweetApp
     </div>
+</div>
+{% endif %}
 
+
+
+<div class="container">
+    {% block content %}
+    {% endblock %}
+</div>
+
+<script src="https://kit.fontawesome.com/5d82faebd2.js" crossorigin="anonymous"></script>
 </body>
 </html>

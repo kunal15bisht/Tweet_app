@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<div class="container mt-5 p-4">
+<div class="container mt-5 pt-5 p-4">
     <div class="card shadow p-4" style="max-width: 500px; margin: auto;">
         <h3 class="text-center mb-4">Register</h3>
         {% for message in messages %}
@@ -48,11 +48,11 @@
                     </button>
                 </form>
             {% endif %}
+            <p class='text-center mt-4'>Already have an account. <a href="{% url 'login' %}">login here</a></p>
         </div>
     </div>
 
        
-        <p class='text-center mt-2'>Already have an account. <a href="{% url 'login' %}">login here</a></p>
     </div>
 </div>
     
