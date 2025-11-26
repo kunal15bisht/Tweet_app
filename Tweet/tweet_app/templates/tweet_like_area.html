@@ -1,0 +1,19 @@
+
+<div id="like-section-{{ tweet.id }}" class="d-flex align-items-center">
+    <button 
+        class="btn btn-link text-danger p-0 border-0 text-decoration-none pt-1" 
+        hx-post="{% url 'tweet_like' tweet.id %}" 
+        hx-target="#like-section-{{ tweet.id }}" 
+        hx-swap="outerHTML"
+        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'> {% if user in tweet.likes.all %}
+            <i class="bi bi-heart-fill text-danger" style="font-size: 1.2rem;"></i>
+        {% else %}
+            <i class="bi bi-heart text-secondary" style="font-size: 1.2rem;"></i>
+        {% endif %}
+    </button>
+        
+    <span class="ms-2 text-muted" style="font-size: 1.2rem;">
+         {{ tweet.likes.count }}
+         {% if tweet.likes.count == 1 %}Like{% else %}Likes{% endif %}
+    </span>
+</div>

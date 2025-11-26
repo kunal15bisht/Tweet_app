@@ -12,9 +12,13 @@ class Tweet(models.Model):
     photo = models.ImageField(upload_to="photos/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    likes = models.ManyToManyField(User, related_name='tweet_likes', blank = True)
 
     def __str__(self):
         return f"{self.user.username} - {self.text[:50]}"
+    
+    def total_likes(self):
+        return self.likes.count()
 
     # We can remove the custom .delete() and .save() methods
     # The signals below will handle everything

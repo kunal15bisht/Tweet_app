@@ -1,5 +1,3 @@
-import time
-from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render
 from .models import Tweet
@@ -8,24 +6,13 @@ from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
-import random
-from django.core.mail import send_mail
+from .utils import generate_otp, send_otp_email
 import time
+from django.urls import reverse
+# from django.urls import reverse
+from django.http import HttpResponseRedirect
 
 # Create your views here.
-
-#All the tweets
-def tweet_list(request):
-    # Use select_related to join the User table
-    tweets = Tweet.objects.select_related('user').all().order_by("-created_at")
-    return render(request, 'tweet_list.html',{"tweets":tweets})
-
-
-#singal tweets
-def tweet_detail(request,tweet_id):
-    tweet = get_object_or_404(Tweet, pk =tweet_id)
-    return render(request ,'tweet_detail.html',{"tweet":tweet})
-
 #Create a tweet
 @login_required
 def tweet_create(request):
@@ -39,6 +26,38 @@ def tweet_create(request):
     else:
         form = TweetForm()
     return render(request, "tweet_form.html",{'form':form})
+
+
+# Like or unlike a tweet
+@login_required
+def tweet_like(request, tweet_id):
+    tweet = get_object_or_404(Tweet, pk=tweet_id)
+    
+    if tweet.likes.filter(id=request.user.id).exists():
+        tweet.likes.remove(request.user)
+    else:
+        tweet.likes.add(request.user)
+    
+    # ✅ If the request is from HTMX (the button), just render the button, not the whole page
+    if request.headers.get('HX-Request'):
+        return render(request, 'tweet_like_area.html', {'tweet': tweet})
+
+    # Fallback for non-JS users
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', reverse('tweet_list')))
+
+
+#All the tweets
+def tweet_list(request):
+    # Use select_related to join the User table
+    tweets = Tweet.objects.select_related('user').all().order_by("-created_at")
+    return render(request, 'tweet_list.html',{"tweets":tweets})
+
+
+#singal tweets
+def tweet_detail(request,tweet_id):
+    tweet = get_object_or_404(Tweet, pk =tweet_id)
+    return render(request ,'tweet_detail.html',{"tweet":tweet})
+
 
 #Edit a tweet
 @login_required
@@ -90,144 +109,16 @@ def tweet_search(request):
 
 #user registration with OTP verification
 def register(request):
+    if request.method == 'GET':
+        return render(request, 'registration/register.html', {'form': UserRegistrationsForm()})
 
-    #expiry time
-    OTP_EXPIRY_SECONDS = 120
-    if request.method == 'POST':
-        
-        # --- Phase 1: User submits basic info ---
-        if 'send_otp' in request.POST:
-            form = UserRegistrationsForm(request.POST)
-            if form.is_valid():
-                email = form.cleaned_data['email']
-                username = form.cleaned_data['username']
-
-                # Check if email or username already exists
-                if User.objects.filter(email=email).exists():
-                    messages.error(request, "An account with this email already exists.")
-                    return render(request, 'registration/register.html', {'form': form})
-                if User.objects.filter(username=username).exists():
-                     messages.error(request, "This username is already taken.")
-                     return render(request, 'registration/register.html', {'form': form})
-
-                # Generate and send OTP
-                otp = str(random.randint(100000, 999999))
-                request.session['pending_registration'] = form.cleaned_data
-                request.session['otp'] = otp
-                request.session['otp_created_at'] = time.time()
-                request.session['registration_email'] = email
-
-                send_mail(
-                    subject='Verify your email address for TweetApp',
-                    message=f"""Hello { email },
-                        Thank you for signing up with TweetApp — we’re excited to have you join our community!
-                        To complete your registration and activate your account, please verify your email address.
-
-                        Your one-time verification code (OTP) is:
-
-                        { otp }
-
-                        This code is valid for the next 5 minutes and can be used only once.
-                        If you didn’t request this code, please ignore this email — your account will remain inactive until the code is verified.
-
-                        Welcome aboard,
-                        The TweetApp Team
-                        support@tweetapp.com
-                    """,
-                    from_email=settings.EMAIL_HOST_USER,
-                    recipient_list=[email],
-                )
-
-                messages.info(request, f"An OTP has been sent to {email}. It will expire in 2 minutes.")
-                return render(request, 'registration/register.html', {
-                    'otp_phase': True,
-                    'email': email
-                })
-            else:
-                # Form is invalid, re-render with errors
-                return render(request, 'registration/register.html', {'form': form})
-
-        # --- Phase 2: User enters OTP to confirm ---
-        elif 'verify_otp' in request.POST:
-            entered_otp = request.POST.get('otp')
-            saved_otp = request.session.get('otp')
-            data = request.session.get('pending_registration')
-            otp_created_at = request.session.get('otp_created_at')
-            email = request.session.get('registration_email')
-
-            if not all([saved_otp, data, otp_created_at, email]):
-                messages.error(request, "Your session has expired. Please start over.")
-                return redirect('register')
-
-            # Check for expiry
-            if (time.time() - otp_created_at) > OTP_EXPIRY_SECONDS:
-                messages.error(request, "Your OTP has expired. Please request a new one.")
-                return render(request, 'registration/register.html', {
-                    'otp_phase': True,
-                    'email': email
-                })
-
-            if entered_otp == saved_otp:
-                # Create and activate user
-                user = User.objects.create_user(
-                    username=data['username'],
-                    email=data['email'],
-                    password=data['password1']
-                )
-                messages.success(request, "Registration successful! You can now log in.")
-                
-                # Clean up all session keys
-                for key in ['otp', 'pending_registration', 'otp_created_at', 'registration_email']:
-                    if key in request.session:
-                        del request.session[key]
-                        
-                return redirect('login')
-            else:
-                messages.error(request, "Invalid OTP. Please try again.")
-                return render(request, 'registration/register.html', {
-                    'otp_phase': True,
-                    'email': email
-                })
-        
-        # --- Phase 3: Resend OTP ---
-        elif 'resend_otp' in request.POST:
-            email = request.session.get('registration_email')
-            
-            if not email:
-                messages.error(request, "Your session has expired. Please start over.")
-                return redirect('register')
-
-            # Generate and send NEW OTP
-            otp = str(random.randint(100000, 999999))
-            request.session['otp'] = otp
-            request.session['otp_created_at'] = time.time() # Reset timer
-
-            send_mail(
-                subject='Your New TweetApp Verification Code',
-                message=f"""Hello { email },
-
-                    Your new one-time verification code (OTP) is:
-
-                    { otp }
-
-                    This code is valid for the next 5 minutes.
-
-                    The TweetApp Team
-                """,
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[email],
-            )
-
-            messages.info(request, f"A new OTP has been sent to {email}. It will expire in 5 minutes.")
-            return render(request, 'registration/register.html', {
-                'otp_phase': True,
-                'email': email
-            })
-
-    else:
-        form = UserRegistrationsForm()
-    return render(request, 'registration/register.html', {'form': form})
-
+    if 'send_otp' in request.POST:
+        return handle_registration_request(request)    
+    elif 'verify_otp' in request.POST:
+        return handle_otp_verification(request)
+    elif 'resend_otp' in request.POST:
+        return handle_resend_otp(request)
+    return redirect('register')
 
 
 def login_view(request):
@@ -301,3 +192,77 @@ def profile_edit(request):
 
     return render(request, 'profile_edit.html', context)
 
+
+
+# ------------All registeration helper functions with otp
+def handle_registration_request(request):
+    form = UserRegistrationsForm(request.POST)
+    if not form.is_valid():
+        return render(request, 'registration/register.html', {'form': form})
+
+    # Data is valid (checks were moved to forms.py)
+    otp = generate_otp()
+    email = form.cleaned_data['email']
+
+    # Save to session
+    request.session['pending_reg'] = form.cleaned_data
+    request.session['otp'] = otp
+    request.session['otp_time'] = time.time()
+    request.session['reg_email'] = email
+
+    send_otp_email(email, otp)
+    
+    messages.info(request, f"OTP sent to {email}.")
+    return render(request, 'registration/register.html', {'otp_phase': True, 'email': email})
+
+def handle_otp_verification(request):
+    # Retrieve session data
+    saved_otp = request.session.get('otp')
+    user_data = request.session.get('pending_reg')
+    otp_time = request.session.get('otp_time')
+
+    # 1. Check Session Validity
+    if not all([saved_otp, user_data, otp_time]):
+        messages.error(request, "Session expired. Please register again.")
+        return redirect('register')
+
+    # 2. Check Time Expiry (120 seconds)
+    if time.time() - otp_time > 120:
+        messages.error(request, "OTP expired.")
+        return render(request, 'registration/register.html', {
+            'otp_phase': True, 
+            'email': user_data['email']
+        })
+
+    # 3. Verify OTP
+    if request.POST.get('otp') == saved_otp:
+        User.objects.create_user(
+            username=user_data['username'],
+            email=user_data['email'],
+            password=user_data['password1']
+        )
+        # Flush session data specifically related to registration
+        request.session.flush() 
+        messages.success(request, "Registration successful!")
+        return redirect('login')
+    
+    # 4. Invalid OTP
+    messages.error(request, "Invalid OTP.")
+    return render(request, 'registration/register.html', {
+        'otp_phase': True, 
+        'email': user_data['email']
+    })
+
+def handle_resend_otp(request):
+    email = request.session.get('reg_email')
+    if not email:
+        return redirect('register')
+        
+    otp = generate_otp()
+    request.session['otp'] = otp
+    request.session['otp_time'] = time.time()
+    
+    send_otp_email(email, otp)
+    messages.info(request, "New OTP sent.")
+    
+    return render(request, 'registration/register.html', {'otp_phase': True, 'email': email})

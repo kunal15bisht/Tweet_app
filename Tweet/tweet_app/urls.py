@@ -12,6 +12,7 @@ urlpatterns = [
     path('search/', views.tweet_search, name='tweet_search'),
     path('profile/edit/', views.profile_edit, name='profile_edit'),
     path('profile/<str:username>/', views.profile, name='profile'),
+    path('tweet_like/<int:tweet_id>', views.tweet_like, name='tweet_like'),
     # Authentication
     path('', views.register, name='register'),
     path('login/', views.login_view, name='login'),

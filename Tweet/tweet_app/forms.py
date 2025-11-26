@@ -24,31 +24,35 @@ class TweetForm(forms.ModelForm):
         self.fields['photo'].required = False
 
 
-
 class UserRegistrationsForm(UserCreationForm):
-    email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={
-        'class': 'form-control',
-        'placeholder': 'Enter your email',
-    }))
-
+    # We add email specifically because UserCreationForm doesn't require it by default
+    email = forms.EmailField(
+        required=True, 
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control', 
+            'placeholder': 'Enter your email'
+        })
+    )
     class Meta:
         model = User
-        fields = ("username", "email", "password1", "password2")
-
+        # Only list model fields here. Passwords are handled by the parent class automatically.
+        fields = ("username", "email") 
     def __init__(self, *args, **kwargs):
-        super(UserRegistrationsForm, self).__init__(*args, **kwargs)
-        self.fields['username'].widget.attrs.update({
-            'class': 'form-control',
-            'placeholder': 'Enter your username',
-        })
-        self.fields['password1'].widget.attrs.update({
-            'class': 'form-control',
-            'placeholder': 'Enter your password',
-        })
-        self.fields['password2'].widget.attrs.update({
-            'class': 'form-control',
-            'placeholder': 'Confirm your password',
-        })
+        super().__init__(*args, **kwargs)
+        # LOOP to apply styles instead of repeating lines
+        for field_name in ['username', 'password1', 'password2']:
+            if field_name in self.fields:
+                self.fields[field_name].widget.attrs.update({
+                    'class': 'form-control',
+                    'placeholder': f"Enter your {field_name.replace('1', '').replace('2', '')}"
+                })
+    # --- KEY ADDITION: Validate Email Uniqueness Here ---
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("An account with this email already exists.")
+        return email
+
 
 
 class UserLoginForm(forms.Form):

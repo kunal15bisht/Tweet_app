@@ -22,8 +22,10 @@
                     </div>
 
                 </dev>
-
+                <div class="col d-flex justify-content-between">
                     <p class="card-text fs-6">{{ tweet.text }}</p>
+                    {% include "tweet_like_area.html" %}
+                </div>
             </div>
         </div>
         {% if tweet.user == user %}
